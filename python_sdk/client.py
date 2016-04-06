@@ -3,7 +3,7 @@ __author__ = 'ruyi'
 
 from .config import APP_PRIVATE_KEY, PLATFORM_PUBLIC_KEY, APP_ID, SANDBOX, APP_SECRET
 from .utils import core
-from .utils.crypt import RSAUtils
+from .utils.crypt import RSAUtils, Md5Utils
 import requests, json
 import urllib
 
@@ -14,6 +14,7 @@ class NewGamePay(object):
         self.app_id = APP_ID
         self.app_private_key = APP_PRIVATE_KEY
         self.platform_public_key = PLATFORM_PUBLIC_KEY
+        self.app_secret = APP_SECRET
         if SANDBOX:
             self.api_url = "http://luck.passport.newgame.com/"
         else:
@@ -22,7 +23,7 @@ class NewGamePay(object):
             self.api_url = url
 
 
-    def post_order(self, subject, body, amount, notify_url, app_order_id, app_user_id):
+    def post_order(self, subject, body, amount, notify_url, app_order_id, app_user_id, sign_type='rsa'):
         """
         发送订单请求，如果成功返回新游支付订单号(order_id)和订单支付页面url(pay_url)
         :param subject: 商品名
@@ -42,7 +43,7 @@ class NewGamePay(object):
             "app_order_id": app_order_id,
             "app_user_id": app_user_id,
             "app_id": self.app_id,
-            "sign_type": "rsa"
+            "sign_type": sign_type
         }
 
         sign = self.sign(data)
@@ -66,8 +67,11 @@ class NewGamePay(object):
         """
         sign = data.get('sign')
         sign_string = core.get_sign_string(data, filter_params=['sign', 'sign_type'])
-        rsa = RSAUtils(public_key=self.platform_public_key)
-        return rsa.verify(sign_string, sign)
+        if data.get('sign_type') == 'rsa':
+            rsa = RSAUtils(public_key=self.platform_public_key)
+            return rsa.verify(sign_string, sign)
+        else:
+            return Md5Utils().verify(sign_string, sign, self.app_secret)
 
 
     def sign(self, data):
@@ -77,9 +81,12 @@ class NewGamePay(object):
         :return:
         """
         sign_string = core.get_sign_string(data, filter_params=['sign', 'sign_type'])
-        print self.app_private_key
-        rsa = RSAUtils(private_key=self.app_private_key)
-        return rsa.sign(sign_string)
+        if data.get('sign_type') == 'rsa':
+            rsa = RSAUtils(private_key=self.app_private_key)
+            return rsa.sign(sign_string)
+        else:
+            return Md5Utils().sign(sign_string, self.app_secret)
+
 
 
 class NewGameOauth(object):
@@ -131,6 +138,7 @@ class NewGameOauth(object):
 
     def _call_api(self, api_url):
         resp = requests.get(api_url, timeout=10)
+        print resp.content
         if resp.status_code == 200:
             return_data = json.loads(resp.content)
             return return_data['data']
@@ -138,4 +146,4 @@ class NewGameOauth(object):
             error = json.loads(resp.content)
             raise Exception(error['meta']['message'])
 
-        return Exception('Access Error')
+        raise Exception('Access Error')
