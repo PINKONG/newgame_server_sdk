@@ -100,15 +100,20 @@ class NewgamePay extends NewGameBase{
     }
 
     public function sign($data){
-        //转换为openssl密钥
-        $res = openssl_get_privatekey($this->app_private_key);
-        //调用openssl内置签名方法，生成签名$sign
+        $sign_type = $data['sign_type'];
         $sign_str = $this->_build_sign_str($data);
-        openssl_sign($sign_str, $sign, $res, OPENSSL_ALGO_SHA1);
-        //释放资源
-        openssl_free_key($res);
-        //base64编码
-        $sign = base64_encode($sign);
+        if($sign_type == 'rsa'){
+            //转换为openssl密钥
+            $res = openssl_get_privatekey($this->app_private_key);
+            //调用openssl内置签名方法，生成签名$sign
+            openssl_sign($sign_str, $sign, $res, OPENSSL_ALGO_SHA1);
+            //释放资源
+            openssl_free_key($res);
+            //base64编码
+            $sign = base64_encode($sign);
+        }else{
+            $sign = md5($sign_str . $this->app_secret);
+        }
 
         return $sign;
     }
@@ -160,7 +165,7 @@ class NewGameOauth extends NewGameBase{
         $params = array(
             "access_token" => $access_token
         );
-        $url .= "?" . http_build_query(params);
+        $url .= "?" . http_build_query($params);
 
         return $this->_call_api($url);
     }
