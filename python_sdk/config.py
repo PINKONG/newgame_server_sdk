@@ -26,6 +26,3 @@ APP_PRIVATE_KEY =   'MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAN/kHfRAw77
 APP_ID = '9'
 
 APP_SECRET = '0WiCxAU1jh76SbgaaFC7qIaBPm2zkyM1'
-
-#sandbox，正式环境请用False
-SANDBOX = True

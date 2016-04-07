@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'ruyi'
 
-from .config import APP_PRIVATE_KEY, PLATFORM_PUBLIC_KEY, APP_ID, SANDBOX, APP_SECRET
+from .config import APP_PRIVATE_KEY, PLATFORM_PUBLIC_KEY, APP_ID, APP_SECRET
 from .utils import core
 from .utils.crypt import RSAUtils, Md5Utils
 import requests, json
@@ -10,17 +10,15 @@ import urllib
 
 class NewGamePay(object):
 
-    def __init__(self, url=''):
+    def __init__(self, sandbox=False):
         self.app_id = APP_ID
         self.app_private_key = APP_PRIVATE_KEY
         self.platform_public_key = PLATFORM_PUBLIC_KEY
         self.app_secret = APP_SECRET
-        if SANDBOX:
+        if sandbox:
             self.api_url = "http://luck.passport.newgame.com/"
         else:
             self.api_url = "https://passport.newgame.com/"
-        if url:
-            self.api_url = url
 
 
     def post_order(self, subject, body, amount, notify_url, app_order_id, app_user_id, sign_type='rsa'):
@@ -91,15 +89,13 @@ class NewGamePay(object):
 
 class NewGameOauth(object):
 
-    def __init__(self, url=''):
+    def __init__(self, sandbox=False):
         self.app_id = APP_ID
         self.app_secret = APP_SECRET
-        if SANDBOX:
+        if sandbox:
             self.api_url = "http://luck.passport.newgame.com/"
         else:
             self.api_url = "https://passport.newgame.com/"
-        if url:
-            self.api_url = url
 
 
     def build_auth_url(self, redirect_uri, state=''):
@@ -138,7 +134,6 @@ class NewGameOauth(object):
 
     def _call_api(self, api_url):
         resp = requests.get(api_url, timeout=10)
-        print resp.content
         if resp.status_code == 200:
             return_data = json.loads(resp.content)
             return return_data['data']
