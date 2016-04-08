@@ -146,7 +146,6 @@ class NewgamePay extends NewGameBase{
 }
 
 
-
 class NewGameOauth extends NewGameBase{
 
     public function build_auth_url($redirect_uri, $state=''){
