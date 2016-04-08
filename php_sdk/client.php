@@ -85,6 +85,19 @@ class NewgamePay extends NewGameBase{
         return $this->_call_api($url, json_encode($data), 'POST');
     }
 
+    public function get_order($app_order_id, $sign_type='rsa'){
+        $data = array(
+            "app_id" => $this->app_id,
+            "app_order_id" => $app_order_id,
+            "sign_type" => $sign_type
+        );
+        $data['sign'] = $this->sign($data);
+
+        $url = $this->api_url . "api/pay/order?" . http_build_query($data);
+
+        return $this->_call_api($url);
+    }
+
     public function verify($data){
         //转换为openssl格式密钥
         $res = openssl_get_publickey($this->platform_public_key);
