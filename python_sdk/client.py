@@ -7,8 +7,7 @@ from .utils.crypt import RSAUtils, Md5Utils
 import requests, json
 import urllib
 
-
-class NewGamePay(object):
+class NewGameBase(object):
 
     def __init__(self, sandbox=False):
         self.app_id = APP_ID
@@ -19,6 +18,24 @@ class NewGamePay(object):
             self.api_url = "http://luck.passport.newgame.com/"
         else:
             self.api_url = "https://passport.newgame.com/"
+
+
+    def _call_api(self, api_url, data={}, method='GET'):
+        if method == 'GET':
+            resp = requests.get(api_url, timeout=10)
+        else:
+            resp = requests.post(api_url, data=json.dumps(data), timeout=10)
+        if resp.status_code == 200:
+            return_data = json.loads(resp.content)
+            return return_data['data']
+        elif resp.status_code == 400:
+            error = json.loads(resp.content)
+            raise Exception(error['meta']['message'])
+
+        raise Exception('Access Error')
+
+
+class NewGamePay(NewGameBase):
 
 
     def post_order(self, subject, body, amount, notify_url, app_order_id, app_user_id, sign_type='rsa'):
@@ -46,15 +63,20 @@ class NewGamePay(object):
 
         sign = self.sign(data)
         data['sign'] = sign
-        resp = requests.post(url, data=json.dumps(data), timeout=10)
-        if resp.status_code == 200:
-            return_data = json.loads(resp.content)
-            return return_data['data']
-        if resp.status_code == 400:
-            error = json.loads(resp.content)
-            raise Exception(error['meta']['message'])
+        return self._call_api(url, data, method='POST')
 
-        return None
+
+    def get_order(self, app_order_id, sign_type='rsa'):
+        url = self.api_url + 'api/pay/order'
+        data ={
+            "app_order_id": app_order_id,
+            "app_id": self.app_id,
+            "sign_type": sign_type
+        }
+
+        data['sign'] = self.sign(data)
+        url += "?" + urllib.urlencode(data)
+        return self._call_api(url)
 
 
     def verify(self, data):
@@ -87,15 +109,7 @@ class NewGamePay(object):
 
 
 
-class NewGameOauth(object):
-
-    def __init__(self, sandbox=False):
-        self.app_id = APP_ID
-        self.app_secret = APP_SECRET
-        if sandbox:
-            self.api_url = "http://luck.passport.newgame.com/"
-        else:
-            self.api_url = "https://passport.newgame.com/"
+class NewGameOauth(NewGameBase):
 
 
     def build_auth_url(self, redirect_uri, state=''):
@@ -130,15 +144,3 @@ class NewGameOauth(object):
         url += "?" + urllib.urlencode(params)
 
         return self._call_api(url)
-
-
-    def _call_api(self, api_url):
-        resp = requests.get(api_url, timeout=10)
-        if resp.status_code == 200:
-            return_data = json.loads(resp.content)
-            return return_data['data']
-        elif resp.status_code == 400:
-            error = json.loads(resp.content)
-            raise Exception(error['meta']['message'])
-
-        raise Exception('Access Error')
