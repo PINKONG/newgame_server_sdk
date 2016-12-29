@@ -103,6 +103,7 @@ class NewgamePay extends NewGameBase{
         //调用openssl内置方法验签，返回bool值
         $sign = $data['sign'];
         $sign_str = $this->_build_sign_str($data);
+        var_dump($sign_str);
         $result = (bool)openssl_verify($sign_str, base64_decode($sign), $res, OPENSSL_ALGO_SHA1);
         //释放资源
         openssl_free_key($res);
@@ -124,6 +125,8 @@ class NewgamePay extends NewGameBase{
             //base64编码
             $sign = base64_encode($sign);
         }else{
+            $this->app_secret = 'cQ30mFiNuquQ0YqjtL23MvWAVV41lJZV';
+            var_dump($sign_str . $this->app_secret);
             $sign = md5($sign_str . $this->app_secret);
         }
 
@@ -182,21 +185,3 @@ class NewGameOauth extends NewGameBase{
     }
 
 }
-
-
-//$client = new NewgamePay(true);
-//$data = array(
-//    'subject'=> '10元宝',
-//    'app_id' => '9',
-//    'amount'=> '10',
-//    'order_id'=> '20160413151055691843',
-//    'app_order_id'=> 'bbeca1418da8f7ca5108cd6fc121d3f8',
-//    'app_user_id'=> 'e87cd99673524e0100119d7046819ae5',
-//    'status'=> 'STATUS_SUCCESS',
-//    'payment_time'=> '1460563653',
-//    'notify_time'=> '1460597465',
-//    'ext'=> 'e87cd99673524e0100119d7046819ae5-a1-1-xyhl_____52',
-//    'sign'=> 'gjZAse2nK6OL6TJJYs4MI/Prfp17c1+/QHwZ6o1vETjhE+szv69Vbf1TxwtLbTCo3cX/9WZiSQwF1m9cGFWy9sKdZZcAe1oK+keMHxwJ5EX5iHpyGsLjEWvJ0gKjkL+9jHnzKIYh7OnZ3LUmE/751wfc9yob6ODjsNaRWMaG1YI=',
-//    'sign_type'=> 'rsa'
-//);
-//var_dump($client->post_order('商品', '商品说明', 2, 'http://www.baidu.com', 'asfsaaaf', '5b3da59a66ddb6a23fc1a41b5a85285d'));
