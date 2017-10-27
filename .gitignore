@@ -25,4 +25,4 @@ Vagrantfile
 .vagrant/
 /test.py
 /test.php
-sdk/target/
+java_sdk/target/
