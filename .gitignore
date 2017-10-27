@@ -1,7 +1,7 @@
 .DS_Store
 .sass-cache
 *.iml
-.idea/
+.idea
 .ipr
 .iws
 *~
@@ -25,3 +25,4 @@ Vagrantfile
 .vagrant/
 /test.py
 /test.php
+sdk/target/
